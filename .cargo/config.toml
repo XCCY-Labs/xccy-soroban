@@ -1,0 +1,7 @@
+# Soroban host (currently) does not accept WASM with reference-types,
+# multi-value, or sign-extension features that newer Rust toolchains
+# enable by default for wasm32-unknown-unknown. Disable them at build time.
+[target.wasm32-unknown-unknown]
+rustflags = [
+    "-C", "target-feature=-reference-types,-multivalue,-sign-ext,-bulk-memory,-nontrapping-fptoint",
+]
