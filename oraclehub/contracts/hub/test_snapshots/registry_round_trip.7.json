@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "l_4_5of1"
+                        "symbol": "l9qos_"
                       }
                     },
                     {
@@ -30,7 +30,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 0
+                        "u32": 4
                       }
                     }
                   ]
@@ -62,7 +62,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "l_4_5of1"
+                        "symbol": "l9qos_"
                       }
                     },
                     {
@@ -70,7 +70,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 0
+                        "u32": 4
                       }
                     }
                   ]

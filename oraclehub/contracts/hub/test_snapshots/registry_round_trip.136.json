@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "u59y9_z"
+                        "symbol": "r"
                       }
                     },
                     {
@@ -30,7 +30,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 3
+                        "u32": 4
                       }
                     }
                   ]
@@ -62,7 +62,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "u59y9_z"
+                        "symbol": "r"
                       }
                     },
                     {
@@ -70,7 +70,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 3
+                        "u32": 4
                       }
                     }
                   ]

@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "v_p7__b7"
+                        "symbol": "x50_"
                       }
                     },
                     {
@@ -30,7 +30,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 0
+                        "u32": 3
                       }
                     }
                   ]
@@ -62,7 +62,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "v_p7__b7"
+                        "symbol": "x50_"
                       }
                     },
                     {
@@ -70,7 +70,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 0
+                        "u32": 3
                       }
                     }
                   ]

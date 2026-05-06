@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "if_dk849"
+                        "symbol": "yh4"
                       }
                     },
                     {
@@ -30,7 +30,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 3
+                        "u32": 2
                       }
                     }
                   ]
@@ -62,7 +62,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "if_dk849"
+                        "symbol": "yh4"
                       }
                     },
                     {
@@ -70,7 +70,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 3
+                        "u32": 2
                       }
                     }
                   ]

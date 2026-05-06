@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "px"
+                        "symbol": "lcrr"
                       }
                     },
                     {
@@ -154,7 +154,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "px"
+                        "symbol": "lcrr"
                       }
                     },
                     {
@@ -191,7 +191,7 @@
                             "symbol": "key"
                           },
                           "val": {
-                            "symbol": "px"
+                            "symbol": "lcrr"
                           }
                         },
                         {

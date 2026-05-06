@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "ydmddkf"
+                        "symbol": "vbguzzgc"
                       }
                     },
                     {
@@ -30,7 +30,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 1
+                        "u32": 3
                       }
                     }
                   ]
@@ -154,7 +154,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "ydmddkf"
+                        "symbol": "vbguzzgc"
                       }
                     },
                     {
@@ -162,7 +162,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 1
+                        "u32": 3
                       }
                     }
                   ]
@@ -191,7 +191,7 @@
                             "symbol": "key"
                           },
                           "val": {
-                            "symbol": "ydmddkf"
+                            "symbol": "vbguzzgc"
                           }
                         },
                         {
@@ -199,7 +199,7 @@
                             "symbol": "kind"
                           },
                           "val": {
-                            "u32": 1
+                            "u32": 3
                           }
                         }
                       ]

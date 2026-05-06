@@ -22,9 +22,9 @@ fn as_i128(v: &Value) -> i128 {
         }
         s.parse().expect("i128 string")
     } else {
-        v.as_i64().map(|x| x as i128).unwrap_or_else(|| {
-            v.as_u64().expect("numeric input") as i128
-        })
+        v.as_i64()
+            .map(|x| x as i128)
+            .unwrap_or_else(|| v.as_u64().expect("numeric input") as i128)
     }
 }
 
@@ -142,7 +142,11 @@ fn check_rate_normalisation(env: &Env, v: &Value, name: &str) {
     } else if let Some(aps) = input.get("assets_per_share_wad") {
         // ERC-4626 growth: max(0, aps - WAD)
         let aps_v = as_i128(aps);
-        if aps_v >= WAD { aps_v - WAD } else { 0 }
+        if aps_v >= WAD {
+            aps_v - WAD
+        } else {
+            0
+        }
     } else {
         panic!("{name}: rate_normalisation needs scalar7_value or assets_per_share_wad");
     };
