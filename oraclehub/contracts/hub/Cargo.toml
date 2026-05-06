@@ -1,0 +1,26 @@
+[package]
+name = "oraclehub-hub"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+oraclehub-types = { workspace = true }
+oraclehub-wad = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+oraclehub-reflector-price = { path = "../adapters/reflector_price" }
+oraclehub-blend-rate = { path = "../adapters/blend_rate" }
+oraclehub-benji-yield = { path = "../adapters/benji_yield" }
+oraclehub-usde-rate = { path = "../adapters/usde_rate" }
+oraclehub-custom-apr = { path = "../adapters/custom_apr" }
+proptest = "1"
+serde_json = "1"

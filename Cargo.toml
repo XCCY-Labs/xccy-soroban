@@ -1,0 +1,38 @@
+[workspace]
+resolver = "2"
+members = [
+    "oraclehub/crates/types",
+    "oraclehub/crates/wad",
+    "oraclehub/contracts/hub",
+    "oraclehub/contracts/adapters/reflector_price",
+    "oraclehub/contracts/adapters/blend_rate",
+    "oraclehub/contracts/adapters/benji_yield",
+    "oraclehub/contracts/adapters/usde_rate",
+    "oraclehub/contracts/adapters/custom_apr",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "BSL-1.2"
+rust-version = "1.83"
+publish = false
+
+[workspace.dependencies]
+soroban-sdk = "22"
+oraclehub-types = { path = "oraclehub/crates/types" }
+oraclehub-wad = { path = "oraclehub/crates/wad" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true

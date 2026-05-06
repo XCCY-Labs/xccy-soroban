@@ -1,0 +1,165 @@
+[
+  {
+    "name": "staleness_pass_heartbeat_3600",
+    "category": "price_guard",
+    "description": "PriceGuardsLib.applyStaleness with heartbeat=3600 and age=100 → fresh",
+    "input": { "now": 5000, "updated_at": 4900, "heartbeat_sec": 3600 },
+    "expected": "Ok",
+    "source": "test/oracles/OracleHub.t.sol::test_staleness_pass"
+  },
+  {
+    "name": "staleness_fail_age_3600_heartbeat_60",
+    "category": "price_guard",
+    "description": "PriceGuardsLib.applyStaleness with heartbeat=60 and age=3600 → stale",
+    "input": { "now": 5000, "updated_at": 1400, "heartbeat_sec": 60 },
+    "expected": "StaleData",
+    "source": "test/oracles/OracleHub.t.sol::test_staleness_fail"
+  },
+  {
+    "name": "staleness_future_timestamp_rejected",
+    "category": "price_guard",
+    "description": "Future-dated source timestamp must reject (anti-DoS)",
+    "input": { "now": 1000, "updated_at": 1001, "heartbeat_sec": 60 },
+    "expected": "FutureTimestamp",
+    "source": "test/oracles/OracleHub.t.sol::test_staleness_future_implicit"
+  },
+  {
+    "name": "staleness_disabled_when_heartbeat_zero",
+    "category": "price_guard",
+    "description": "heartbeat_sec=0 disables the check",
+    "input": { "now": 1000, "updated_at": 100, "heartbeat_sec": 0 },
+    "expected": "Ok",
+    "source": "PriceGuardsLib.applyStaleness implicit"
+  },
+  {
+    "name": "stable_clamp_inside_band_30bps",
+    "category": "price_guard",
+    "description": "0.997 within ±30bps of 1.0 → within=true",
+    "input": { "value_wad": 997000000000000000, "anchor_wad": 1000000000000000000, "min_bps": -30, "max_bps": 30 },
+    "expected_within": true,
+    "source": "test/oracles/OracleHub.t.sol::test_stableClamp_passWithin30bps"
+  },
+  {
+    "name": "stable_clamp_outside_band_below",
+    "category": "price_guard",
+    "description": "0.996 below -30bps → within=false",
+    "input": { "value_wad": 996000000000000000, "anchor_wad": 1000000000000000000, "min_bps": -30, "max_bps": 30 },
+    "expected_within": false,
+    "source": "test/oracles/OracleHub.t.sol::test_stableClamp_failOutside30bps"
+  },
+  {
+    "name": "guard_validation_rejects_min_above_max",
+    "category": "price_guard_validation",
+    "description": "PriceGuard.validate must reject min>max",
+    "input": { "heartbeat_sec": 0, "min_bps": 10, "max_bps": 5 },
+    "expected": "InvalidGuardBand",
+    "source": "test/oracles/OracleHub.t.sol::test_guardProfile_reverts_whenMinAboveMax"
+  },
+  {
+    "name": "guard_validation_rejects_below_minus_10000",
+    "category": "price_guard_validation",
+    "description": "PriceGuard.validate must reject min < -10000",
+    "input": { "heartbeat_sec": 0, "min_bps": -10001, "max_bps": 0 },
+    "expected": "GuardBpsOutOfRange",
+    "source": "test/oracles/OracleHub.t.sol::test_guardProfile_reverts_whenBpsOutOfRange"
+  },
+  {
+    "name": "guard_validation_accepts_well_formed",
+    "category": "price_guard_validation",
+    "description": "Standard stable-clamp profile must validate",
+    "input": { "heartbeat_sec": 86400, "min_bps": -30, "max_bps": 30 },
+    "expected": "Ok",
+    "source": "PriceGuard.validate happy path"
+  },
+  {
+    "name": "wad_mul_identity",
+    "category": "wad_math",
+    "description": "WAD × WAD = WAD",
+    "input": { "a": 1000000000000000000, "b": 1000000000000000000 },
+    "expected_value": 1000000000000000000
+  },
+  {
+    "name": "wad_mul_half_times_half",
+    "category": "wad_math",
+    "description": "0.5 × 0.5 = 0.25 in WAD",
+    "input": { "a": 500000000000000000, "b": 500000000000000000 },
+    "expected_value": 250000000000000000
+  },
+  {
+    "name": "wad_div_identity",
+    "category": "wad_math",
+    "description": "WAD ÷ WAD = WAD",
+    "input": { "a": 1000000000000000000, "b": 1000000000000000000 },
+    "expected_value": 1000000000000000000
+  },
+  {
+    "name": "wad_div_half_by_one",
+    "category": "wad_math",
+    "description": "0.5 ÷ 1.0 = 0.5",
+    "input": { "a": 500000000000000000, "b": 1000000000000000000 },
+    "expected_value": 500000000000000000
+  },
+  {
+    "name": "wad_mul_div_overflow_returns_err",
+    "category": "wad_math",
+    "description": "i128::MAX × 2 / 1 overflows → Err",
+    "input": { "a": "i128_max", "b": 2, "d": 1 },
+    "expected": "Overflow"
+  },
+  {
+    "name": "blend_rate_normalisation_5pct",
+    "category": "rate_normalisation",
+    "description": "Blend SCALAR_7 = 500_000 (5%) → WAD = 5e16",
+    "input": { "scalar7_value": 500000 },
+    "expected_value": 50000000000000000
+  },
+  {
+    "name": "blend_rate_normalisation_zero",
+    "category": "rate_normalisation",
+    "description": "Zero rate stays zero across precision conversions",
+    "input": { "scalar7_value": 0 },
+    "expected_value": 0
+  },
+  {
+    "name": "blend_rate_normalisation_100pct",
+    "category": "rate_normalisation",
+    "description": "Blend SCALAR_7 = 1e7 (100%) → WAD = 1e18",
+    "input": { "scalar7_value": 10000000 },
+    "expected_value": 1000000000000000000
+  },
+  {
+    "name": "usde_growth_5pct",
+    "category": "rate_normalisation",
+    "description": "ERC-4626 convertToAssets(WAD) = 1.05e18 → growth = 5e16",
+    "input": { "assets_per_share_wad": 1050000000000000000 },
+    "expected_value": 50000000000000000
+  },
+  {
+    "name": "usde_growth_below_par_clamped_to_zero",
+    "category": "rate_normalisation",
+    "description": "convertToAssets below 1.0 → growth=0 (defensive)",
+    "input": { "assets_per_share_wad": 999000000000000000 },
+    "expected_value": 0
+  },
+  {
+    "name": "custom_apr_deviation_within_bound",
+    "category": "deviation_guard",
+    "description": "5%→6% (20% delta) within 2000bps allowed",
+    "input": { "current_wad": 50000000000000000, "new_wad": 60000000000000000, "max_dev_bps": 2000 },
+    "expected": "Ok"
+  },
+  {
+    "name": "custom_apr_deviation_exceeded",
+    "category": "deviation_guard",
+    "description": "5%→10% (100% delta) exceeds 1000bps",
+    "input": { "current_wad": 50000000000000000, "new_wad": 100000000000000000, "max_dev_bps": 1000 },
+    "expected": "DeviationExceeded"
+  },
+  {
+    "name": "custom_apr_first_set_unrestricted",
+    "category": "deviation_guard",
+    "description": "current=0 skips the deviation check on first set",
+    "input": { "current_wad": 0, "new_wad": 1000000000000000000, "max_dev_bps": 100 },
+    "expected": "Ok"
+  }
+]
