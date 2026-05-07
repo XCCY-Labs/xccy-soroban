@@ -19,7 +19,14 @@ rust-version = "1.83"
 publish = false
 
 [workspace.dependencies]
-soroban-sdk = "22"
+# Bumped from 22 → 25 to match `blend-contract-sdk`, which pulls in
+# soroban-sdk 25.3 transitively. Keeping a single soroban-sdk version across
+# the dependency tree is mandatory — divergent versions produce duplicated
+# `Address`/`Env` types that fail to unify at the contractimport boundary.
+soroban-sdk = "25"
+# Canonical Blend Protocol contract bindings — provides `pool::Client` and types
+# auto-derived from the published Pool WASM via `soroban_sdk::contractimport!`.
+blend-contract-sdk = "2"
 oraclehub-types = { path = "oraclehub/crates/types" }
 oraclehub-wad = { path = "oraclehub/crates/wad" }
 

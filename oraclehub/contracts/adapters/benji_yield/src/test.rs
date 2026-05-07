@@ -27,7 +27,7 @@ use soroban_sdk::{testutils::Address as _, xdr::ToXdr, Address, Bytes, BytesN, E
 // is provided. Where that's infeasible we restrict tests to the surface that
 // doesn't pass through the verifier.
 
-fn setup(env: &Env) -> (BenjiYieldClient, Address) {
+fn setup(env: &Env) -> (BenjiYieldClient<'_>, Address) {
     let admin = Address::generate(env);
     let signer = BytesN::<32>::from_array(env, &[0u8; 32]);
     let id = env.register(BenjiYield, (&admin, &signer));

@@ -12,6 +12,7 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { workspace = true }
+blend-contract-sdk = { workspace = true }
 oraclehub-types = { workspace = true }
 oraclehub-wad = { workspace = true }
 

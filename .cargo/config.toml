@@ -1,6 +1,16 @@
-# Soroban host (currently) does not accept WASM with reference-types,
-# multi-value, or sign-extension features that newer Rust toolchains
-# enable by default for wasm32-unknown-unknown. Disable them at build time.
+# Soroban-sdk ≥25 requires the `wasm32v1-none` target (introduced in Rust 1.84)
+# instead of `wasm32-unknown-unknown`. Pass it explicitly when building for
+# production WASM:
+#
+#   cargo build --release --target wasm32v1-none --workspace
+#
+# We deliberately do NOT pin `[build] target` here, because cargo would then
+# also try to build host-only crates (proptest, serde_json, fastrand) for the
+# wasm target during `cargo test` / `cargo clippy --all-targets`, breaking
+# both. Host-target builds remain the cargo default.
+
+# Kept for reference: same flags would have been required on the legacy
+# target if we still used it.
 [target.wasm32-unknown-unknown]
 rustflags = [
     "-C", "target-feature=-reference-types,-multivalue,-sign-ext,-bulk-memory,-nontrapping-fptoint",

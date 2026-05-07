@@ -8,7 +8,6 @@ use soroban_sdk::{
     Address, BytesN, Env, Symbol,
 };
 
-use oraclehub_blend_rate::BlendRate;
 use oraclehub_custom_apr::{CustomApr, CustomAprClient};
 use oraclehub_reflector_price::{ReflectorPrice, ReflectorPriceClient};
 
@@ -23,31 +22,6 @@ const KEY_BLEND_S: Symbol = symbol_short!("blendS");
 // `__SPEC_XDR_FN___CONSTRUCTOR`) that would otherwise collide if two
 // constructor-bearing contracts lived in the same module.
 // ---------------------------------------------------------------------------
-
-mod mock_blend_pool {
-    use soroban_sdk::{contract, contractimpl, Address, Env};
-
-    #[contract]
-    pub struct MockBlendPool;
-
-    #[contractimpl]
-    impl MockBlendPool {
-        pub fn __constructor(env: Env, borrow_scalar7: i128, supply_scalar7: i128, ts: u64) {
-            env.storage().instance().set(&"b", &borrow_scalar7);
-            env.storage().instance().set(&"s", &supply_scalar7);
-            env.storage().instance().set(&"t", &ts);
-        }
-        pub fn borrow_rate(env: Env, _asset: Address) -> i128 {
-            env.storage().instance().get(&"b").unwrap_or(0)
-        }
-        pub fn supply_rate(env: Env, _asset: Address) -> i128 {
-            env.storage().instance().get(&"s").unwrap_or(0)
-        }
-        pub fn last_update(env: Env, _asset: Address) -> u64 {
-            env.storage().instance().get(&"t").unwrap_or(0)
-        }
-    }
-}
 
 mod mock_sep40 {
     use oraclehub_types::{PriceData, SepAsset};
@@ -80,7 +54,6 @@ mod mock_sep40 {
     }
 }
 
-use mock_blend_pool::MockBlendPool;
 use mock_sep40::MockSep40;
 
 // ---------------------------------------------------------------------------
@@ -268,23 +241,12 @@ fn get_price_kind_mismatch_rejects_rate_id() {
     assert_eq!(err, OracleError::InvalidArgument);
 }
 
-#[test]
-fn full_dispatch_blend_rate_through_hub() {
-    let env = Env::default();
-    env.mock_all_auths();
-    env.ledger().with_mut(|l| l.timestamp = 100);
-    let admin = Address::generate(&env);
-    let hub = deploy_hub(&env, &admin);
-
-    let pool = env.register(MockBlendPool, (0_i128, 500_000_i128, 95_u64));
-    let blend_addr = env.register(BlendRate, (&admin, &pool));
-    let id = rid(OracleKind::BlendRate, KEY_BLEND_S);
-    hub.register_oracle(&id, &blend_addr);
-
-    let asset = Address::generate(&env);
-    let r = hub.get_rate(&id, &asset);
-    assert_eq!(r.value, 50_000_000_000_000_000);
-}
+// Note: blend_rate cross-contract dispatch is exercised end-to-end in
+// `oraclehub-blend-rate`'s own integration tests. Here we keep the hub-side
+// dispatch coverage via `unpause_restores_reads` (which dispatches to a
+// custom_apr adapter). Re-introducing a blend-shaped MockPool here would
+// require pulling in `blend-contract-sdk` as a hub dev-dep, which we avoid
+// for compile-time hygiene.
 
 #[test]
 fn full_dispatch_reflector_price_through_hub() {

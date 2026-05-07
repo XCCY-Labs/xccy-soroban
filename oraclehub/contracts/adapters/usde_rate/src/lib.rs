@@ -1,3 +1,4 @@
+#![allow(deprecated)] // soroban-sdk 25: events().publish migrating to #[contractevent], TODO
 #![no_std]
 
 //! UsdeRate adapter — surfaces sUSDe ↔ USDe exchange rate (Ethena yield).

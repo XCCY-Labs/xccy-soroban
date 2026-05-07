@@ -1,3 +1,4 @@
+#![allow(deprecated)] // soroban-sdk 25: events().publish migrating to #[contractevent], TODO
 #![no_std]
 
 //! CustomApr adapter — admin-set APR with timelock and max-deviation guard.

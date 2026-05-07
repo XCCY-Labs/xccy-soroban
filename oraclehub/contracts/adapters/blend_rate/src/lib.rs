@@ -1,39 +1,32 @@
+#![allow(deprecated)] // soroban-sdk 25: events().publish migrating to #[contractevent], TODO
 #![no_std]
 
-//! BlendRate adapter — reads variable rates from a Blend `Pool` contract.
+//! BlendRate adapter — reads variable rates from a Blend Protocol V2 `Pool`.
 //!
-//! In production, the adapter calls `Pool::get_reserve_data(asset)` and
-//! computes borrow/supply rates from the IR utilisation curve. For v0.1 the
-//! adapter is wired to a `BlendPoolClient` trait that the production Blend
-//! Pool contract satisfies; tests use a mock pool returning canned reserve
-//! data.
+//! Uses the canonical `blend-contract-sdk` crate, which `contractimport!`s the
+//! published Pool WASM and auto-derives the `Reserve` / `ReserveData` /
+//! `ReserveConfig` types and the cross-contract `Client`. We call
+//! `pool.get_reserve(asset)` and surface the cumulative bToken / dToken indices
+//! re-scaled from Blend's 12-decimal precision (`SCALAR_12 = 1e12`) up to WAD
+//! (`1e18`).
 //!
-//! Blend uses 7-decimal `SCALAR_7` precision; rates are normalised up to WAD.
+//! Returning the *cumulative index* (rather than an instantaneous APR) is the
+//! same primitive used by the Solidity `AprOracle` reference: downstream
+//! consumers compute realised APR as `(idx_now − idx_then) / Δt`.
 
+use blend_contract_sdk::pool;
 use oraclehub_types::{OracleError, RateData};
-use oraclehub_wad::to_wad;
-use soroban_sdk::{
-    contract, contractclient, contractimpl, contracttype, symbol_short, Address, Env, Symbol,
-};
+use oraclehub_wad::mul_div_i128;
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
 
-const BLEND_DECIMALS: u32 = 7;
+/// Blend stores rates as i128 with 12 decimals. WAD has 18, so we scale by 1e6.
+const BLEND_TO_WAD_SCALAR: i128 = 1_000_000;
 
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
     Admin,
     Pool,
-}
-
-/// Subset of Blend's `Pool` interface that the adapter consumes.
-///
-/// Real Blend pool returns a struct with `borrow_rate_scalar7` and
-/// `supply_rate_scalar7` among other fields; we expose the minimum needed.
-#[contractclient(name = "BlendPoolClient")]
-pub trait BlendPool {
-    fn borrow_rate(env: Env, asset: Address) -> i128;
-    fn supply_rate(env: Env, asset: Address) -> i128;
-    fn last_update(env: Env, asset: Address) -> u64;
 }
 
 const TOPIC_INIT: Symbol = symbol_short!("init");
@@ -64,42 +57,64 @@ impl BlendRate {
         env.storage().instance().get(&DataKey::Pool)
     }
 
-    pub fn get_borrow_rate(env: Env, asset: Address) -> Result<RateData, OracleError> {
-        let pool = pool_addr(&env)?;
-        let client = BlendPoolClient::new(&env, &pool);
-        let raw = client.borrow_rate(&asset);
-        let ts = client.last_update(&asset);
-        let value = to_wad(&env, raw, BLEND_DECIMALS)?;
-        Ok(RateData {
-            value,
-            updated_at: ts,
-        })
-    }
-
+    /// Cumulative supply index (`b_rate`) re-scaled to WAD.
+    ///
+    /// Grows monotonically as the pool accrues interest. Two consecutive
+    /// reads divided by Δt yield the realised supply APR over that window.
     pub fn get_supply_rate(env: Env, asset: Address) -> Result<RateData, OracleError> {
-        let pool = pool_addr(&env)?;
-        let client = BlendPoolClient::new(&env, &pool);
-        let raw = client.supply_rate(&asset);
-        let ts = client.last_update(&asset);
-        let value = to_wad(&env, raw, BLEND_DECIMALS)?;
+        let reserve = read_reserve(&env, &asset)?;
+        let value = mul_div_i128(&env, reserve.data.b_rate, BLEND_TO_WAD_SCALAR, 1)?;
         Ok(RateData {
             value,
-            updated_at: ts,
+            updated_at: reserve.data.last_time,
         })
     }
 
-    /// Unified rate-adapter entry point used by the Hub. Defaults to supply rate
-    /// (variable yield leg of the receiver strategy).
+    /// Cumulative debt index (`d_rate`) re-scaled to WAD.
+    pub fn get_borrow_rate(env: Env, asset: Address) -> Result<RateData, OracleError> {
+        let reserve = read_reserve(&env, &asset)?;
+        let value = mul_div_i128(&env, reserve.data.d_rate, BLEND_TO_WAD_SCALAR, 1)?;
+        Ok(RateData {
+            value,
+            updated_at: reserve.data.last_time,
+        })
+    }
+
+    /// Pool utilisation in WAD (the `config.util` field is the *target* util,
+    /// not the *current* one — see `compute_utilisation` for the live value).
+    pub fn get_utilisation(env: Env, asset: Address) -> Result<i128, OracleError> {
+        let reserve = read_reserve(&env, &asset)?;
+        compute_utilisation(&env, &reserve)
+    }
+
+    /// Unified rate-adapter entry point used by the Hub. Defaults to the
+    /// supply-side cumulative index (variable-yield leg of the receiver strategy).
     pub fn peek_rate(env: Env, asset: Address) -> Result<RateData, OracleError> {
         Self::get_supply_rate(env, asset)
     }
 }
 
-fn pool_addr(env: &Env) -> Result<Address, OracleError> {
-    env.storage()
+fn read_reserve(env: &Env, asset: &Address) -> Result<pool::Reserve, OracleError> {
+    let pool_addr: Address = env
+        .storage()
         .instance()
         .get(&DataKey::Pool)
-        .ok_or(OracleError::AdminNotSet)
+        .ok_or(OracleError::AdminNotSet)?;
+    let client = pool::Client::new(env, &pool_addr);
+    Ok(client.get_reserve(asset))
+}
+
+/// Live utilisation: `d_supply * d_rate / (b_supply * b_rate)`.
+///
+/// Both supply totals and rate indices are 12-decimal; the ratio is
+/// dimensionless and we normalise to WAD by scaling the result.
+fn compute_utilisation(env: &Env, reserve: &pool::Reserve) -> Result<i128, OracleError> {
+    let total_supply = mul_div_i128(env, reserve.data.b_supply, reserve.data.b_rate, 1)?;
+    if total_supply == 0 {
+        return Ok(0);
+    }
+    let total_borrow = mul_div_i128(env, reserve.data.d_supply, reserve.data.d_rate, 1)?;
+    mul_div_i128(env, total_borrow, oraclehub_types::WAD, total_supply)
 }
 
 fn require_admin(env: &Env) -> Result<(), OracleError> {
