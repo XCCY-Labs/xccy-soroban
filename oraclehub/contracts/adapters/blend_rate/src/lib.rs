@@ -18,6 +18,8 @@ use blend_contract_sdk::pool;
 use oraclehub_types::{OracleError, RateData};
 use oraclehub_wad::mul_div_i128;
 use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use stellar_access::ownable::{self as ownable, Ownable};
+use stellar_macros::only_owner;
 
 /// Blend stores rates as i128 with 12 decimals. WAD has 18, so we scale by 1e6.
 const BLEND_TO_WAD_SCALAR: i128 = 1_000_000;
@@ -25,11 +27,9 @@ const BLEND_TO_WAD_SCALAR: i128 = 1_000_000;
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
-    Admin,
     Pool,
 }
 
-const TOPIC_INIT: Symbol = symbol_short!("init");
 const TOPIC_POOL: Symbol = symbol_short!("pool_set");
 
 #[contract]
@@ -38,19 +38,14 @@ pub struct BlendRate;
 #[contractimpl]
 impl BlendRate {
     pub fn __constructor(env: Env, admin: Address, pool: Address) {
-        if env.storage().instance().has(&DataKey::Admin) {
-            soroban_sdk::panic_with_error!(env, OracleError::AlreadyInitialized);
-        }
-        env.storage().instance().set(&DataKey::Admin, &admin);
+        ownable::set_owner(&env, &admin);
         env.storage().instance().set(&DataKey::Pool, &pool);
-        env.events().publish((TOPIC_INIT,), (admin, pool));
     }
 
-    pub fn set_pool(env: Env, pool: Address) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_pool(env: Env, pool: Address) {
         env.storage().instance().set(&DataKey::Pool, &pool);
         env.events().publish((TOPIC_POOL,), pool);
-        Ok(())
     }
 
     pub fn pool(env: Env) -> Option<Address> {
@@ -94,6 +89,9 @@ impl BlendRate {
     }
 }
 
+#[contractimpl(contracttrait)]
+impl Ownable for BlendRate {}
+
 fn read_reserve(env: &Env, asset: &Address) -> Result<pool::Reserve, OracleError> {
     let pool_addr: Address = env
         .storage()
@@ -115,16 +113,6 @@ fn compute_utilisation(env: &Env, reserve: &pool::Reserve) -> Result<i128, Oracl
     }
     let total_borrow = mul_div_i128(env, reserve.data.d_supply, reserve.data.d_rate, 1)?;
     mul_div_i128(env, total_borrow, oraclehub_types::WAD, total_supply)
-}
-
-fn require_admin(env: &Env) -> Result<(), OracleError> {
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .ok_or(OracleError::AdminNotSet)?;
-    admin.require_auth();
-    Ok(())
 }
 
 #[cfg(test)]

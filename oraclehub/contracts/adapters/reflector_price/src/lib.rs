@@ -19,15 +19,15 @@ use oraclehub_wad::to_wad;
 use soroban_sdk::{
     contract, contractclient, contractimpl, contracttype, symbol_short, Address, Env, Symbol,
 };
+use stellar_access::ownable::{self as ownable, Ownable};
+use stellar_macros::only_owner;
 
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
-    Admin,
     Feed,
 }
 
-const TOPIC_INIT: Symbol = symbol_short!("init");
 const TOPIC_FEED: Symbol = symbol_short!("feed_set");
 
 /// SEP-40-shaped client we generate against the registered feed contract.
@@ -47,18 +47,13 @@ pub struct ReflectorPrice;
 #[contractimpl]
 impl ReflectorPrice {
     pub fn __constructor(env: Env, admin: Address) {
-        if env.storage().instance().has(&DataKey::Admin) {
-            soroban_sdk::panic_with_error!(env, OracleError::AlreadyInitialized);
-        }
-        env.storage().instance().set(&DataKey::Admin, &admin);
-        env.events().publish((TOPIC_INIT,), admin);
+        ownable::set_owner(&env, &admin);
     }
 
-    pub fn set_feed(env: Env, feed: Address) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_feed(env: Env, feed: Address) {
         env.storage().instance().set(&DataKey::Feed, &feed);
         env.events().publish((TOPIC_FEED,), feed);
-        Ok(())
     }
 
     pub fn feed(env: Env) -> Option<Address> {
@@ -86,15 +81,8 @@ impl ReflectorPrice {
     }
 }
 
-fn require_admin(env: &Env) -> Result<(), OracleError> {
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .ok_or(OracleError::AdminNotSet)?;
-    admin.require_auth();
-    Ok(())
-}
+#[contractimpl(contracttrait)]
+impl Ownable for ReflectorPrice {}
 
 #[cfg(test)]
 mod test;

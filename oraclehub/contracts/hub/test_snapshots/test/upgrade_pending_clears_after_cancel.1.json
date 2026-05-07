@@ -16,7 +16,7 @@
               "function_name": "propose_upgrade",
               "args": [
                 {
-                  "bytes": "77795e83d592672008044f21fd434ba5f6a28d3f84e1bf9c50b061e3f009cc9a"
+                  "bytes": "5ec887b5b76335092c733650b85b8ce3c323f9c7c95e6612d39f4196d29b104a"
                 }
               ]
             }
@@ -112,24 +112,12 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
                       "val": {
                         "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-                      }
-                    },
-                    {
-                      "key": {
-                        "vec": [
-                          {
-                            "symbol": "Paused"
-                          }
-                        ]
-                      },
-                      "val": {
-                        "bool": false
                       }
                     }
                   ]

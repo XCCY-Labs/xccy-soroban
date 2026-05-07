@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "b"
+                        "symbol": "ptx"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 3
+                        "u32": 4
                       }
                     }
                   ]
@@ -132,7 +132,7 @@
                           "symbol": "key"
                         },
                         "val": {
-                          "symbol": "b"
+                          "symbol": "ptx"
                         }
                       },
                       {
@@ -140,7 +140,7 @@
                           "symbol": "kind"
                         },
                         "val": {
-                          "u32": 3
+                          "u32": 4
                         }
                       }
                     ]
@@ -176,7 +176,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
@@ -224,7 +224,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },

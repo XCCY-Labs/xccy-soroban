@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "dypnodjr"
+                        "symbol": "bzqx"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 1
+                        "u32": 3
                       }
                     }
                   ]
@@ -132,7 +132,7 @@
                           "symbol": "key"
                         },
                         "val": {
-                          "symbol": "dypnodjr"
+                          "symbol": "bzqx"
                         }
                       },
                       {
@@ -140,7 +140,7 @@
                           "symbol": "kind"
                         },
                         "val": {
-                          "u32": 1
+                          "u32": 3
                         }
                       }
                     ]
@@ -176,7 +176,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
@@ -224,7 +224,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },

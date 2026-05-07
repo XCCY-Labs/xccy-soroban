@@ -27,6 +27,18 @@ soroban-sdk = "25"
 # Canonical Blend Protocol contract bindings — provides `pool::Client` and types
 # auto-derived from the published Pool WASM via `soroban_sdk::contractimport!`.
 blend-contract-sdk = "2"
+# OpenZeppelin Stellar Contracts — peer-reviewed access control, pausable,
+# upgradeable utilities. We use `Ownable` instead of hand-rolling admin state
+# machines, `Pausable` for emergency stop, and `upgradeable::upgrade` as a
+# standardised wrapper around `update_current_contract_wasm`.
+stellar-access = "0.7"
+stellar-contract-utils = "0.7"
+stellar-macros = "0.7"
+# Script3's fixed-point math (used by Blend itself). FixedPoint trait on i128
+# with checked overflow + floor/ceil rounding modes; Soroban variants route
+# through I256 intermediates to avoid phantom overflow. Replaces our internal
+# `oraclehub-wad` mul/div primitives.
+soroban-fixed-point-math = "1"
 oraclehub-types = { path = "oraclehub/crates/types" }
 oraclehub-wad = { path = "oraclehub/crates/wad" }
 

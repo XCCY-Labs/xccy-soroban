@@ -16,7 +16,7 @@
               "function_name": "propose_upgrade",
               "args": [
                 {
-                  "bytes": "ba31a281f92485421269101a7e4ba9ff52771f9cf1b5faa269e0e3e5ae1a969c"
+                  "bytes": "1677df72907ad0ae5c4601414faee6be50d61fd9d28d2a30be423d5ddaab33a7"
                 }
               ]
             }
@@ -76,24 +76,12 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
                       "val": {
                         "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-                      }
-                    },
-                    {
-                      "key": {
-                        "vec": [
-                          {
-                            "symbol": "Paused"
-                          }
-                        ]
-                      },
-                      "val": {
-                        "bool": false
                       }
                     },
                     {
@@ -119,7 +107,7 @@
                               "symbol": "wasm_hash"
                             },
                             "val": {
-                              "bytes": "ba31a281f92485421269101a7e4ba9ff52771f9cf1b5faa269e0e3e5ae1a969c"
+                              "bytes": "1677df72907ad0ae5c4601414faee6be50d61fd9d28d2a30be423d5ddaab33a7"
                             }
                           }
                         ]

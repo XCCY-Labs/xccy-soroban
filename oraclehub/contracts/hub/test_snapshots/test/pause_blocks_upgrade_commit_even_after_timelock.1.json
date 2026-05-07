@@ -16,7 +16,7 @@
               "function_name": "propose_upgrade",
               "args": [
                 {
-                  "bytes": "2e6ec2e91809d4ae4b8491cbf3cfda4ddb3a28a701c0a410dbaf4b6f74135022"
+                  "bytes": "f9a5653b73098868b0f54437ced065d82b9afa3b4c716fee377c56ca13f986c9"
                 }
               ]
             }
@@ -111,7 +111,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
@@ -154,7 +154,7 @@
                               "symbol": "wasm_hash"
                             },
                             "val": {
-                              "bytes": "2e6ec2e91809d4ae4b8491cbf3cfda4ddb3a28a701c0a410dbaf4b6f74135022"
+                              "bytes": "f9a5653b73098868b0f54437ced065d82b9afa3b4c716fee377c56ca13f986c9"
                             }
                           }
                         ]

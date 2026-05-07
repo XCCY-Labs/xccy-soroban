@@ -16,7 +16,7 @@
               "function_name": "propose_upgrade",
               "args": [
                 {
-                  "bytes": "2c2d48cbda358e29279531e7ee4608f1925f0884915b8ca6ebad374ce2f3d9a9"
+                  "bytes": "2bb85b593ba5f918e50e0a032a6e65664d2bce9988237fa3033fd32f4a92c645"
                 }
               ]
             }
@@ -30,7 +30,7 @@
   "ledger": {
     "protocol_version": 25,
     "sequence_number": 0,
-    "timestamp": 520138,
+    "timestamp": 827521,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
     "base_reserve": 0,
     "min_persistent_entry_ttl": 4096,
@@ -76,24 +76,12 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
                       "val": {
                         "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-                      }
-                    },
-                    {
-                      "key": {
-                        "vec": [
-                          {
-                            "symbol": "Paused"
-                          }
-                        ]
-                      },
-                      "val": {
-                        "bool": false
                       }
                     },
                     {
@@ -111,7 +99,7 @@
                               "symbol": "executable_at"
                             },
                             "val": {
-                              "u64": "557452"
+                              "u64": "872851"
                             }
                           },
                           {
@@ -119,7 +107,7 @@
                               "symbol": "wasm_hash"
                             },
                             "val": {
-                              "bytes": "2c2d48cbda358e29279531e7ee4608f1925f0884915b8ca6ebad374ce2f3d9a9"
+                              "bytes": "2bb85b593ba5f918e50e0a032a6e65664d2bce9988237fa3033fd32f4a92c645"
                             }
                           }
                         ]

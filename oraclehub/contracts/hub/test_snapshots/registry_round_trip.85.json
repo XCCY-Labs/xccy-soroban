@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "xwo__"
+                        "symbol": "s"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 2
+                        "u32": 3
                       }
                     }
                   ]
@@ -63,7 +63,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "xwo__"
+                        "symbol": "s"
                       }
                     },
                     {
@@ -71,7 +71,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 2
+                        "u32": 3
                       }
                     }
                   ]
@@ -154,24 +154,12 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
                       "val": {
                         "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-                      }
-                    },
-                    {
-                      "key": {
-                        "vec": [
-                          {
-                            "symbol": "Paused"
-                          }
-                        ]
-                      },
-                      "val": {
-                        "bool": false
                       }
                     }
                   ]
@@ -202,18 +190,6 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
-                          }
-                        ]
-                      },
-                      "val": {
-                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
-                      }
-                    },
-                    {
-                      "key": {
-                        "vec": [
-                          {
                             "symbol": "CurrentApr"
                           }
                         ]
@@ -232,6 +208,18 @@
                       },
                       "val": {
                         "u32": 0
+                      }
+                    },
+                    {
+                      "key": {
+                        "vec": [
+                          {
+                            "symbol": "Owner"
+                          }
+                        ]
+                      },
+                      "val": {
+                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                       }
                     },
                     {

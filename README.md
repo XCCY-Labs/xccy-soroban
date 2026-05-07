@@ -11,6 +11,19 @@ Stellar/Soroban.
 > with admin-pushed signed-feed paths and AprOracle-style observation buffers
 > until native on-chain readers land on Stellar.
 
+## Third-party libraries we lean on
+
+The protocol leans on peer-reviewed crates wherever possible rather than
+hand-rolling primitives:
+
+| Crate | Used for |
+|---|---|
+| [`stellar-access`](https://github.com/OpenZeppelin/stellar-contracts) (OpenZeppelin) | `Ownable` trait — 2-step ownership transfer with `live_until_ledger` expiry, `#[only_owner]` macro on every admin gate |
+| [`stellar-contract-utils`](https://github.com/OpenZeppelin/stellar-contracts) (OpenZeppelin) | `Pausable` (`#[when_not_paused]` macro), `upgradeable::upgrade` for the binary swap inside our timelocked `commit_upgrade` |
+| [`stellar-macros`](https://github.com/OpenZeppelin/stellar-contracts) (OpenZeppelin) | `#[only_owner]`, `#[when_not_paused]` derive macros |
+| [`soroban-fixed-point-math`](https://github.com/script3/soroban-fixed-point-math) (Script3 / Blend) | `SorobanFixedPoint` trait — `mul_div_floor` / `mul_div_ceil` over `I256` intermediates. Underpins our `oraclehub-wad` shim |
+| [`blend-contract-sdk`](https://github.com/blend-capital/blend-contract-sdk) | Auto-generated `pool::Client` and `Reserve` types from the published Blend Pool WASM via `contractimport!` — impossible to drift from the on-chain ABI |
+
 ## What's in this repo
 
 ```
@@ -110,8 +123,10 @@ consumers compute realised APR as the index ratio over a time window
 # Workspace build (host target)
 cargo build --workspace
 
-# Production WASM (Soroban requires wasm32v1-none in SDK ≥25)
-cargo build --release --target wasm32v1-none --workspace
+# Production WASM — go through `stellar contract build` because soroban-sdk 25
+# enables `experimental_spec_shaking_v2` by default and that requires the
+# stellar-cli to drive the build:
+stellar contract build
 
 # Optimise for deploy
 for c in oraclehub_hub oraclehub_reflector_price oraclehub_blend_rate \
@@ -119,6 +134,8 @@ for c in oraclehub_hub oraclehub_reflector_price oraclehub_blend_rate \
   stellar contract optimize --wasm target/wasm32v1-none/release/${c}.wasm
 done
 ```
+
+Toolchain is pinned to `rustc 1.92.0` and `stellar-cli ≥26.0`.
 
 ## Test
 

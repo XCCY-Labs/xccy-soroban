@@ -1,50 +1,52 @@
 #![no_std]
 
-//! WAD-precision (1e18) fixed-point math on `i128`.
+//! WAD-precision (1e18) fixed-point math.
 //!
-//! All operations route through `soroban_sdk::I256` for intermediate `mul_div`
-//! to preserve full precision and detect overflow. The crate never panics:
-//! every fallible operation returns `Result<i128, OracleError>`.
+//! Thin shim over [`soroban_fixed_point_math::SorobanFixedPoint`] (Script3 /
+//! Blend authors), which routes all `mul_div` operations through `I256`
+//! intermediates to defeat phantom overflow. The third-party crate is the
+//! canonical Soroban math primitive — used inside Blend itself — so we don't
+//! reinvent it; we just give it a more domain-y surface (`mul_wad`, `div_wad`,
+//! `to_wad`, `lerp`) and pre-validate edge cases that would otherwise panic.
+//!
+//! ## Error model
+//!
+//! `SorobanFixedPoint` *panics* on overflow / divide-by-zero (matching
+//! Soroban host semantics). We pre-check `denominator == 0` and surface that
+//! as `Err(OracleError::DivideByZero)` so contract callers never get a
+//! generic panic for the most common error case. Overflow remains a panic
+//! — financial inputs at our protocol scale stay well inside `I256`'s 256-bit
+//! intermediate range, so overflow indicates a programming bug, not a user
+//! input issue.
 
 use oraclehub_types::{OracleError, WAD};
-use soroban_sdk::{Env, I256};
+use soroban_fixed_point_math::SorobanFixedPoint;
+use soroban_sdk::Env;
 
-/// Multiplies two WAD-scaled values and returns a WAD-scaled product.
-///
-/// `result = (a * b) / WAD`, computed via `I256` to avoid overflow.
+/// `floor(a · b / WAD)` — multiplication of WAD-scaled values.
 pub fn mul_wad(env: &Env, a: i128, b: i128) -> Result<i128, OracleError> {
-    mul_div_i128(env, a, b, WAD)
+    Ok(a.fixed_mul_floor(env, &b, &WAD))
 }
 
-/// Divides two WAD-scaled values, returning a WAD-scaled quotient.
-///
-/// `result = (a * WAD) / b`, computed via `I256`.
+/// `floor(a · WAD / b)` — division of WAD-scaled values.
 pub fn div_wad(env: &Env, a: i128, b: i128) -> Result<i128, OracleError> {
     if b == 0 {
         return Err(OracleError::DivideByZero);
     }
-    mul_div_i128(env, a, WAD, b)
+    // SorobanFixedPoint::fixed_div_floor(x, y, denom) computes floor(x * denom / y).
+    Ok(a.fixed_div_floor(env, &b, &WAD))
 }
 
-/// Computes `(a * b) / d` with `I256` intermediate precision.
-///
-/// Returns `Err(DivideByZero)` if `d == 0`, `Err(Overflow)` if the result
-/// doesn't fit in `i128`.
+/// `floor(a · b / d)` with `I256` intermediate. Returns `Err` for `d == 0`;
+/// panics on overflow (same semantics as `SorobanFixedPoint`).
 pub fn mul_div_i128(env: &Env, a: i128, b: i128, d: i128) -> Result<i128, OracleError> {
     if d == 0 {
         return Err(OracleError::DivideByZero);
     }
-    let a256 = I256::from_i128(env, a);
-    let b256 = I256::from_i128(env, b);
-    let d256 = I256::from_i128(env, d);
-    let prod = a256.mul(&b256);
-    let quot = prod.div(&d256);
-    quot.to_i128().ok_or(OracleError::Overflow)
+    Ok(a.fixed_mul_floor(env, &b, &d))
 }
 
-/// Linear ramp: `lerp(a, b, t/WAD)`.
-///
-/// Useful for piecewise-linear IR curves and signed-feed interpolation.
+/// Linear ramp: `lerp(a, b, t/WAD)`. `t_wad` must be in `[0, WAD]`.
 pub fn lerp(env: &Env, a: i128, b: i128, t_wad: i128) -> Result<i128, OracleError> {
     if !(0..=WAD).contains(&t_wad) {
         return Err(OracleError::InvalidArgument);
@@ -54,9 +56,9 @@ pub fn lerp(env: &Env, a: i128, b: i128, t_wad: i128) -> Result<i128, OracleErro
     a.checked_add(scaled).ok_or(OracleError::Overflow)
 }
 
-/// Convert a value with `from_decimals` decimal precision up to WAD (18 decimals).
+/// Convert `value` from `from_decimals` precision up/down to WAD (18 decimals).
 ///
-/// E.g. `to_wad(env, 5_000_000, 7) = 5_000_000 * 10^11 = 5e17` (Blend SCALAR_7 → WAD).
+/// E.g. `to_wad(env, 5_000_000, 7) = 5_000_000 · 10¹¹ = 5e17` (Blend SCALAR_7 → WAD).
 pub fn to_wad(env: &Env, value: i128, from_decimals: u32) -> Result<i128, OracleError> {
     if from_decimals > 38 {
         return Err(OracleError::InvalidArgument);
@@ -138,13 +140,10 @@ mod tests {
     }
 
     #[test]
-    fn mul_div_overflow_returns_err_not_panic() {
+    #[should_panic] // SorobanFixedPoint panics on overflow (matches host semantics)
+    fn mul_div_overflow_panics() {
         let env = Env::default();
-        // i128::MAX * 2 / 1 overflows i128
-        assert_eq!(
-            mul_div_i128(&env, i128::MAX, 2, 1),
-            Err(OracleError::Overflow)
-        );
+        let _ = mul_div_i128(&env, i128::MAX, 2, 1);
     }
 
     #[test]
@@ -195,7 +194,7 @@ mod tests {
     #[test]
     fn to_wad_from_high_precision_22() {
         let env = Env::default();
-        // RAY 1e27 in 27 decimals → WAD: 1e27 / 1e9 = 1e18
+        // 1e27 in 27 decimals → WAD: 1e27 / 1e9 = 1e18
         assert_eq!(
             to_wad(&env, 1_000_000_000_000_000_000_000_000_000, 27),
             Ok(WAD)

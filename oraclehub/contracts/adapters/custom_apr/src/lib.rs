@@ -11,18 +11,18 @@
 
 use oraclehub_types::{OracleError, RateData};
 use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, Symbol};
+use stellar_access::ownable::{self as ownable, Ownable};
+use stellar_macros::only_owner;
 
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
-    Admin,
     CurrentApr, // i128 (WAD)
     Pending,    // Option<(i128, u64)>
     MaxDevBps,  // u32
     UpdatedAt,  // u64 — when CurrentApr was promoted from a pending entry
 }
 
-const TOPIC_INIT: Symbol = symbol_short!("init");
 const TOPIC_PROP: Symbol = symbol_short!("apr_prop");
 const TOPIC_PROM: Symbol = symbol_short!("apr_prom");
 
@@ -32,21 +32,16 @@ pub struct CustomApr;
 #[contractimpl]
 impl CustomApr {
     pub fn __constructor(env: Env, admin: Address, max_deviation_bps: u32) {
-        if env.storage().instance().has(&DataKey::Admin) {
-            soroban_sdk::panic_with_error!(env, OracleError::AlreadyInitialized);
-        }
-        env.storage().instance().set(&DataKey::Admin, &admin);
+        ownable::set_owner(&env, &admin);
         env.storage().instance().set(&DataKey::CurrentApr, &0i128);
         env.storage()
             .instance()
             .set(&DataKey::MaxDevBps, &max_deviation_bps);
         env.storage().instance().set(&DataKey::UpdatedAt, &0u64);
-        env.events()
-            .publish((TOPIC_INIT,), (admin, max_deviation_bps));
     }
 
+    #[only_owner]
     pub fn set_apr(env: Env, new_apr_wad: i128, effective_at: u64) -> Result<(), OracleError> {
-        require_admin(&env)?;
         if new_apr_wad < 0 {
             return Err(OracleError::InvalidArgument);
         }
@@ -83,10 +78,9 @@ impl CustomApr {
         Ok(())
     }
 
-    pub fn cancel_pending(env: Env) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn cancel_pending(env: Env) {
         env.storage().instance().remove(&DataKey::Pending);
-        Ok(())
     }
 
     /// Promote a pending apr to current if its effective_at has elapsed.
@@ -154,22 +148,14 @@ impl CustomApr {
             .unwrap_or(0)
     }
 
-    pub fn set_max_deviation_bps(env: Env, bps: u32) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_max_deviation_bps(env: Env, bps: u32) {
         env.storage().instance().set(&DataKey::MaxDevBps, &bps);
-        Ok(())
     }
 }
 
-fn require_admin(env: &Env) -> Result<(), OracleError> {
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .ok_or(OracleError::AdminNotSet)?;
-    admin.require_auth();
-    Ok(())
-}
+#[contractimpl(contracttrait)]
+impl Ownable for CustomApr {}
 
 #[cfg(test)]
 mod test;

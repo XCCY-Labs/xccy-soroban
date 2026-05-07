@@ -100,13 +100,6 @@
     "expected_value": 500000000000000000
   },
   {
-    "name": "wad_mul_div_overflow_returns_err",
-    "category": "wad_math",
-    "description": "i128::MAX × 2 / 1 overflows → Err",
-    "input": { "a": "i128_max", "b": 2, "d": 1 },
-    "expected": "Overflow"
-  },
-  {
     "name": "blend_rate_normalisation_5pct",
     "category": "rate_normalisation",
     "description": "Blend SCALAR_7 = 500_000 (5%) → WAD = 5e16",

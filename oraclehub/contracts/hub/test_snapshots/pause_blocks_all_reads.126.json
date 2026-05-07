@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "zqcx"
+                        "symbol": "q"
                       }
                     },
                     {
@@ -132,7 +132,7 @@
                           "symbol": "key"
                         },
                         "val": {
-                          "symbol": "zqcx"
+                          "symbol": "q"
                         }
                       },
                       {
@@ -176,7 +176,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },
@@ -224,7 +224,7 @@
                       "key": {
                         "vec": [
                           {
-                            "symbol": "Admin"
+                            "symbol": "Owner"
                           }
                         ]
                       },

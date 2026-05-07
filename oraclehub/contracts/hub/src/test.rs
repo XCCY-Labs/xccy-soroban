@@ -68,28 +68,33 @@ fn rid(kind: OracleKind, key: Symbol) -> OracleId {
 }
 
 #[test]
-fn constructor_sets_admin() {
+fn constructor_sets_owner() {
     let env = Env::default();
     env.mock_all_auths();
     let admin = Address::generate(&env);
     let hub = deploy_hub(&env, &admin);
-    assert_eq!(hub.admin(), Some(admin));
+    // Auto-derived from `impl Ownable for OracleHub` — OZ standard accessor.
+    assert_eq!(hub.get_owner(), Some(admin));
 }
 
 #[test]
-fn admin_two_step_transfer() {
+fn ownership_two_step_transfer_via_oz_ownable() {
     let env = Env::default();
     env.mock_all_auths();
+    env.ledger().with_mut(|l| l.sequence_number = 100);
     let admin = Address::generate(&env);
     let new_admin = Address::generate(&env);
     let hub = deploy_hub(&env, &admin);
 
-    hub.propose_admin(&new_admin);
-    assert_eq!(hub.pending_admin(), Some(new_admin.clone()));
+    // OZ Ownable's `transfer_ownership` requires a `live_until_ledger` deadline
+    // for the pending transfer. 1000 ledgers is comfortably past current_seq=100.
+    hub.transfer_ownership(&new_admin, &1000);
 
-    hub.accept_admin();
-    assert_eq!(hub.admin(), Some(new_admin));
-    assert_eq!(hub.pending_admin(), None);
+    // The new owner must explicitly accept — same 2-step shape as our
+    // hand-rolled propose/accept, just standardised through OZ.
+    hub.accept_ownership();
+
+    assert_eq!(hub.get_owner(), Some(new_admin));
 }
 
 #[test]
@@ -102,10 +107,13 @@ fn pause_blocks_reads() {
     hub.pause();
     assert!(hub.is_paused());
 
+    // The `#[when_not_paused]` macro from `stellar-macros` panics with
+    // `PausableError::EnforcedPause` (a non-OracleError variant) — assert the
+    // call fails rather than matching the exact error code, which is internal
+    // to the OZ pausable module.
     let key = Address::generate(&env);
     let id = rid(OracleKind::CustomApr, KEY_PYUSD);
-    let err = hub.try_get_rate(&id, &key).err().unwrap().unwrap();
-    assert_eq!(err, OracleError::Paused);
+    assert!(hub.try_get_rate(&id, &key).is_err());
 }
 
 #[test]

@@ -41,6 +41,8 @@ use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short, xdr::ToXdr, Address, Bytes, BytesN, Env,
     Symbol, Vec,
 };
+use stellar_access::ownable::{self as ownable, Ownable};
+use stellar_macros::only_owner;
 
 const SECONDS_PER_YEAR: i128 = 365 * 24 * 60 * 60;
 const DEFAULT_MAX_OBSERVATIONS: u32 = 64;
@@ -48,7 +50,6 @@ const DEFAULT_MAX_OBSERVATIONS: u32 = 64;
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
-    Admin,
     Mode,
     SignerPubkey,
     NavContract,
@@ -84,7 +85,6 @@ pub struct Observation {
     pub nav_wad: i128,
 }
 
-const TOPIC_INIT: Symbol = symbol_short!("init");
 const TOPIC_PUSH: Symbol = symbol_short!("pushed");
 const TOPIC_MODE: Symbol = symbol_short!("mode_set");
 const TOPIC_SNAP: Symbol = symbol_short!("snapshot");
@@ -95,10 +95,7 @@ pub struct BenjiYield;
 #[contractimpl]
 impl BenjiYield {
     pub fn __constructor(env: Env, admin: Address, signer_pubkey: BytesN<32>) {
-        if env.storage().instance().has(&DataKey::Admin) {
-            soroban_sdk::panic_with_error!(env, OracleError::AlreadyInitialized);
-        }
-        env.storage().instance().set(&DataKey::Admin, &admin);
+        ownable::set_owner(&env, &admin);
         env.storage()
             .instance()
             .set(&DataKey::SignerPubkey, &signer_pubkey);
@@ -109,34 +106,30 @@ impl BenjiYield {
         env.storage()
             .instance()
             .set(&DataKey::MaxObservations, &DEFAULT_MAX_OBSERVATIONS);
-        env.events().publish((TOPIC_INIT,), admin);
     }
 
-    // ------------- Admin config -------------
+    // ------------- Owner-gated config -------------
 
-    pub fn set_mode(env: Env, mode: SourceMode) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_mode(env: Env, mode: SourceMode) {
         env.storage().instance().set(&DataKey::Mode, &mode);
         env.events().publish((TOPIC_MODE,), mode);
-        Ok(())
     }
 
-    pub fn set_signer(env: Env, pubkey: BytesN<32>) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_signer(env: Env, pubkey: BytesN<32>) {
         env.storage()
             .instance()
             .set(&DataKey::SignerPubkey, &pubkey);
-        Ok(())
     }
 
-    pub fn set_nav_contract(env: Env, addr: Address) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_nav_contract(env: Env, addr: Address) {
         env.storage().instance().set(&DataKey::NavContract, &addr);
-        Ok(())
     }
 
+    #[only_owner]
     pub fn set_max_observations(env: Env, n: u32) -> Result<(), OracleError> {
-        require_admin(&env)?;
         if n == 0 {
             return Err(OracleError::InvalidArgument);
         }
@@ -146,12 +139,12 @@ impl BenjiYield {
 
     // ------------- Push paths (raw NAV in) -------------
 
-    /// Bootstrap / multi-sig push path. Admin pushes a `(nav, ts)` tuple
-    /// directly with `require_auth` instead of a relayer signature. Useful
-    /// during initial deployment or when the operator is a Stellar-native
-    /// multi-sig rather than an off-chain Ed25519 signer.
+    /// Bootstrap / multi-sig push path. Owner pushes a `(nav, ts)` tuple
+    /// directly via the OZ-Ownable auth check, instead of an off-chain Ed25519
+    /// signature. Useful during initial deployment or when the operator is a
+    /// Stellar-native multi-sig rather than an off-chain signer.
+    #[only_owner]
     pub fn admin_push(env: Env, nav_wad: i128, updated_at: u64) -> Result<(), OracleError> {
-        require_admin(&env)?;
         if nav_wad <= 0 {
             return Err(OracleError::InvalidArgument);
         }
@@ -394,15 +387,8 @@ fn interpolate(env: &Env, buf: &Vec<Observation>, t: u64) -> Result<i128, Oracle
     Err(OracleError::SourceUnavailable)
 }
 
-fn require_admin(env: &Env) -> Result<(), OracleError> {
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .ok_or(OracleError::AdminNotSet)?;
-    admin.require_auth();
-    Ok(())
-}
+#[contractimpl(contracttrait)]
+impl Ownable for BenjiYield {}
 
 #[cfg(test)]
 mod test;

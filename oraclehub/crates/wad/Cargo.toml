@@ -11,4 +11,5 @@ doctest = false
 
 [dependencies]
 soroban-sdk = { workspace = true }
+soroban-fixed-point-math = { workspace = true }
 oraclehub-types = { workspace = true }

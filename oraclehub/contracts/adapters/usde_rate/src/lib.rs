@@ -19,6 +19,8 @@ use soroban_sdk::{
     contract, contractclient, contractimpl, contracttype, symbol_short, xdr::ToXdr, Address, Bytes,
     BytesN, Env, Symbol,
 };
+use stellar_access::ownable::{self as ownable, Ownable};
+use stellar_macros::only_owner;
 
 #[contractclient(name = "Erc4626Client")]
 pub trait Erc4626Vault {
@@ -32,7 +34,6 @@ pub trait Erc4626Vault {
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
-    Admin,
     Mode,
     SignerPubkey,
     Vault,
@@ -55,7 +56,6 @@ pub struct SignedFeedPayload {
     pub nonce: u64,
 }
 
-const TOPIC_INIT: Symbol = symbol_short!("init");
 const TOPIC_PUSH: Symbol = symbol_short!("pushed");
 
 #[contract]
@@ -64,10 +64,7 @@ pub struct UsdeRate;
 #[contractimpl]
 impl UsdeRate {
     pub fn __constructor(env: Env, admin: Address, signer_pubkey: BytesN<32>) {
-        if env.storage().instance().has(&DataKey::Admin) {
-            soroban_sdk::panic_with_error!(env, OracleError::AlreadyInitialized);
-        }
-        env.storage().instance().set(&DataKey::Admin, &admin);
+        ownable::set_owner(&env, &admin);
         env.storage()
             .instance()
             .set(&DataKey::SignerPubkey, &signer_pubkey);
@@ -75,27 +72,23 @@ impl UsdeRate {
             .instance()
             .set(&DataKey::Mode, &SourceMode::Signed);
         env.storage().instance().set(&DataKey::Nonce, &0u64);
-        env.events().publish((TOPIC_INIT,), admin);
     }
 
-    pub fn set_mode(env: Env, mode: SourceMode) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_mode(env: Env, mode: SourceMode) {
         env.storage().instance().set(&DataKey::Mode, &mode);
-        Ok(())
     }
 
-    pub fn set_signer(env: Env, pubkey: BytesN<32>) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_signer(env: Env, pubkey: BytesN<32>) {
         env.storage()
             .instance()
             .set(&DataKey::SignerPubkey, &pubkey);
-        Ok(())
     }
 
-    pub fn set_vault(env: Env, vault: Address) -> Result<(), OracleError> {
-        require_admin(&env)?;
+    #[only_owner]
+    pub fn set_vault(env: Env, vault: Address) {
         env.storage().instance().set(&DataKey::Vault, &vault);
-        Ok(())
     }
 
     pub fn push_signed(
@@ -188,15 +181,8 @@ impl UsdeRate {
     }
 }
 
-fn require_admin(env: &Env) -> Result<(), OracleError> {
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .ok_or(OracleError::AdminNotSet)?;
-    admin.require_auth();
-    Ok(())
-}
+#[contractimpl(contracttrait)]
+impl Ownable for UsdeRate {}
 
 #[cfg(test)]
 mod test;
