@@ -1,8 +1,51 @@
+# --- Cargo ---
 target/
+**/*.rs.bk
 Cargo.lock.bak
-*.swp
+
+# Cargo.lock IS committed for application crates (contracts are applications).
+# Do not ignore.
+
+# --- Soroban / WASM ---
+*.wasm
+!**/wasm/*.wasm        # canonical Blend SDK WASM blobs (vendored, must be tracked)
+
+# Soroban testutils snapshot files written when tests fail
+test_snapshots/
+
+# Local Soroban sandbox state
+oraclehub/tests/.local_sandbox/
+
+# Stellar CLI state (per-machine)
+.stellar/
+
+# --- Rust profiling / coverage ---
+*.profraw
+*.profdata
+tarpaulin-report.*
+lcov.info
+cobertura.xml
+
+# --- OS / editor ---
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
 .idea/
 .vscode/
-*.wasm
-oraclehub/tests/.local_sandbox/
+*.iml
+.fleet/
+
+# --- Secrets / env ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets.toml
+
+# --- Misc ---
+*.log
+*.tmp
+.cache/
