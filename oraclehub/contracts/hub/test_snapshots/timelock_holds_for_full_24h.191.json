@@ -15,7 +15,7 @@
               "function_name": "propose_upgrade",
               "args": [
                 {
-                  "bytes": "961565fa147cc529624bc259756bc89b197eee4683b2c5d497cd24ef552e202f"
+                  "bytes": "30624f964f084f6860150ddec50ce007865b5ca4251fc1804c2b41a5548567a1"
                 }
               ]
             }
@@ -29,7 +29,7 @@
   "ledger": {
     "protocol_version": 22,
     "sequence_number": 0,
-    "timestamp": 710211,
+    "timestamp": 967761,
     "network_id": "0000000000000000000000000000000000000000000000000000000000000000",
     "base_reserve": 0,
     "min_persistent_entry_ttl": 4096,
@@ -131,7 +131,7 @@
                                 "symbol": "executable_at"
                               },
                               "val": {
-                                "u64": 715409
+                                "u64": 1001156
                               }
                             },
                             {
@@ -139,7 +139,7 @@
                                 "symbol": "wasm_hash"
                               },
                               "val": {
-                                "bytes": "961565fa147cc529624bc259756bc89b197eee4683b2c5d497cd24ef552e202f"
+                                "bytes": "30624f964f084f6860150ddec50ce007865b5ca4251fc1804c2b41a5548567a1"
                               }
                             }
                           ]

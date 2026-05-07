@@ -22,7 +22,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "m"
+                        "symbol": "lr"
                       }
                     },
                     {
@@ -154,7 +154,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "m"
+                        "symbol": "lr"
                       }
                     },
                     {
@@ -191,7 +191,7 @@
                             "symbol": "key"
                           },
                           "val": {
-                            "symbol": "m"
+                            "symbol": "lr"
                           }
                         },
                         {

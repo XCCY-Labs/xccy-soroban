@@ -37,11 +37,14 @@ pub struct RateData {
     pub updated_at: u64,
 }
 
+/// SEP-40-compatible price data. Field name `timestamp` matches the SEP-40
+/// XDR encoding exactly so the same struct can be used to deserialise any
+/// SEP-40-compliant oracle (Reflector et al.) without an intermediate type.
 #[contracttype]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PriceData {
     pub price: i128,
-    pub updated_at: u64,
+    pub timestamp: u64,
 }
 
 /// Minimal SEP-40-compatible price feed surface that adapters consume.

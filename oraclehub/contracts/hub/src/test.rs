@@ -1,7 +1,7 @@
 extern crate std;
 
 use crate::{OracleHub, OracleHubClient, PendingUpgrade};
-use oraclehub_types::{OracleError, OracleId, OracleKind, WAD};
+use oraclehub_types::{OracleError, OracleId, OracleKind, SepAsset, WAD};
 use soroban_sdk::{
     symbol_short,
     testutils::{Address as _, BytesN as _, Ledger as _},
@@ -58,9 +58,9 @@ mod mock_sep40 {
 
     #[contractimpl]
     impl MockSep40 {
-        pub fn __constructor(env: Env, price: i128, updated_at: u64, decimals: u32) {
+        pub fn __constructor(env: Env, price: i128, timestamp: u64, decimals: u32) {
             env.storage().instance().set(&"price", &price);
-            env.storage().instance().set(&"ts", &updated_at);
+            env.storage().instance().set(&"ts", &timestamp);
             env.storage().instance().set(&"dec", &decimals);
         }
         pub fn lastprice(env: Env, _asset: SepAsset) -> Option<PriceData> {
@@ -71,7 +71,7 @@ mod mock_sep40 {
             }
             Some(PriceData {
                 price,
-                updated_at: ts,
+                timestamp: ts,
             })
         }
         pub fn decimals(env: Env) -> u32 {
@@ -263,7 +263,7 @@ fn get_price_kind_mismatch_rejects_rate_id() {
     let admin = Address::generate(&env);
     let hub = deploy_hub(&env, &admin);
     let id = rid(OracleKind::BlendRate, KEY_BLEND_S);
-    let asset = Address::generate(&env);
+    let asset = SepAsset::Stellar(Address::generate(&env));
     let err = hub.try_get_price(&id, &asset).err().unwrap().unwrap();
     assert_eq!(err, OracleError::InvalidArgument);
 }
@@ -297,14 +297,14 @@ fn full_dispatch_reflector_price_through_hub() {
     let feed = env.register(MockSep40, (100_000_000_000_000_i128, 95_u64, 14_u32));
     let reflector = env.register(ReflectorPrice, (&admin,));
     let reflector_client = ReflectorPriceClient::new(&env, &reflector);
-
-    let asset = Address::generate(&env);
-    reflector_client.set_feed(&asset, &feed);
+    reflector_client.set_feed(&feed);
 
     let id = rid(OracleKind::ReflectorPrice, KEY_PYUSD);
     hub.register_oracle(&id, &reflector);
 
+    // Query as a Stellar-native asset.
+    let asset = SepAsset::Stellar(Address::generate(&env));
     let p = hub.get_price(&id, &asset);
     assert_eq!(p.price, WAD);
-    assert_eq!(p.updated_at, 95);
+    assert_eq!(p.timestamp, 95);
 }

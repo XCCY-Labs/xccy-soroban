@@ -1,30 +1,39 @@
 #![no_std]
 
-//! ReflectorPrice adapter — wraps a SEP-40-compatible price feed.
+//! ReflectorPrice adapter — thin SEP-40 wrapper.
 //!
-//! The adapter holds a per-asset map of feed contract addresses (Reflector
-//! "subscription" contracts) and exposes `peek_price(asset)` returning a
-//! WAD-precision USD price. Decimals are normalised from the feed's native
-//! precision up to 1e18.
+//! Each instance of this adapter binds one Reflector subscription contract
+//! (one feed). To consume multiple Reflector tiers (CEX/DEX, FX, Stellar DEX),
+//! deploy multiple `ReflectorPrice` instances and register them under
+//! different `OracleId` keys in the hub.
+//!
+//! `peek_price(asset)` accepts the standard SEP-40 `Asset` type
+//! (`SepAsset::Stellar(Address) | SepAsset::Other(Symbol)`) so it can address
+//! both Stellar-native assets (e.g. PYUSD SAC) and external symbols (e.g.
+//! `BTC`, `ETH`, `XLM`). Decimals are normalised from the feed's native
+//! precision (Reflector default = 14) up to WAD (1e18).
 
 use oraclehub_types::{OracleError, PriceData, SepAsset};
 use oraclehub_wad::to_wad;
 use soroban_sdk::{
-    contract, contractclient, contractimpl, contracttype, symbol_short, Address, Env, Map, Symbol,
+    contract, contractclient, contractimpl, contracttype, symbol_short, Address, Env, Symbol,
 };
 
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
     Admin,
-    Feeds, // Map<Address, Address>: asset -> feed contract
-    Decimals(Address),
+    Feed,
 }
 
 const TOPIC_INIT: Symbol = symbol_short!("init");
 const TOPIC_FEED: Symbol = symbol_short!("feed_set");
 
-/// SEP-40-shaped client we generate against any registered feed contract.
+/// SEP-40-shaped client we generate against the registered feed contract.
+///
+/// Field names and ordering must match SEP-40 exactly — Reflector returns
+/// `PriceData { price, timestamp }`, so our shared `oraclehub_types::PriceData`
+/// uses the same shape and we can pass it through unchanged.
 #[contractclient(name = "Sep40Client")]
 pub trait Sep40Feed {
     fn lastprice(env: Env, asset: SepAsset) -> Option<PriceData>;
@@ -38,68 +47,40 @@ pub struct ReflectorPrice;
 impl ReflectorPrice {
     pub fn __constructor(env: Env, admin: Address) {
         if env.storage().instance().has(&DataKey::Admin) {
-            panic_with_error(&env, OracleError::AlreadyInitialized);
+            soroban_sdk::panic_with_error!(env, OracleError::AlreadyInitialized);
         }
         env.storage().instance().set(&DataKey::Admin, &admin);
-        let feeds: Map<Address, Address> = Map::new(&env);
-        env.storage().instance().set(&DataKey::Feeds, &feeds);
         env.events().publish((TOPIC_INIT,), admin);
     }
 
-    pub fn set_feed(env: Env, asset: Address, feed: Address) -> Result<(), OracleError> {
+    pub fn set_feed(env: Env, feed: Address) -> Result<(), OracleError> {
         require_admin(&env)?;
-        let mut feeds: Map<Address, Address> = env
-            .storage()
-            .instance()
-            .get(&DataKey::Feeds)
-            .ok_or(OracleError::AdminNotSet)?;
-        feeds.set(asset.clone(), feed.clone());
-        env.storage().instance().set(&DataKey::Feeds, &feeds);
-        env.events().publish((TOPIC_FEED,), (asset, feed));
+        env.storage().instance().set(&DataKey::Feed, &feed);
+        env.events().publish((TOPIC_FEED,), feed);
         Ok(())
     }
 
-    pub fn unset_feed(env: Env, asset: Address) -> Result<(), OracleError> {
-        require_admin(&env)?;
-        let mut feeds: Map<Address, Address> = env
-            .storage()
-            .instance()
-            .get(&DataKey::Feeds)
-            .ok_or(OracleError::AdminNotSet)?;
-        feeds.remove(asset.clone());
-        env.storage().instance().set(&DataKey::Feeds, &feeds);
-        Ok(())
-    }
-
-    pub fn feed_of(env: Env, asset: Address) -> Option<Address> {
-        let feeds: Map<Address, Address> = env
-            .storage()
-            .instance()
-            .get(&DataKey::Feeds)
-            .unwrap_or(Map::new(&env));
-        feeds.get(asset)
+    pub fn feed(env: Env) -> Option<Address> {
+        env.storage().instance().get(&DataKey::Feed)
     }
 
     /// Read the latest price for `asset`, normalised to WAD precision.
-    pub fn peek_price(env: Env, asset: Address) -> Result<PriceData, OracleError> {
-        let feeds: Map<Address, Address> = env
+    pub fn peek_price(env: Env, asset: SepAsset) -> Result<PriceData, OracleError> {
+        let feed_addr: Address = env
             .storage()
             .instance()
-            .get(&DataKey::Feeds)
-            .unwrap_or(Map::new(&env));
-        let feed_addr = feeds
-            .get(asset.clone())
-            .ok_or(OracleError::AssetNotSupported)?;
+            .get(&DataKey::Feed)
+            .ok_or(OracleError::SourceUnavailable)?;
 
         let client = Sep40Client::new(&env, &feed_addr);
         let raw = client
-            .lastprice(&SepAsset::Stellar(asset))
+            .lastprice(&asset)
             .ok_or(OracleError::SourceUnavailable)?;
         let decimals = client.decimals();
         let price_wad = to_wad(&env, raw.price, decimals)?;
         Ok(PriceData {
             price: price_wad,
-            updated_at: raw.updated_at,
+            timestamp: raw.timestamp,
         })
     }
 }
@@ -112,10 +93,6 @@ fn require_admin(env: &Env) -> Result<(), OracleError> {
         .ok_or(OracleError::AdminNotSet)?;
     admin.require_auth();
     Ok(())
-}
-
-fn panic_with_error(env: &Env, e: OracleError) -> ! {
-    soroban_sdk::panic_with_error!(env, e)
 }
 
 #[cfg(test)]

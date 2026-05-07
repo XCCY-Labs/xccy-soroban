@@ -11,7 +11,7 @@
 //! - Emergency `pause` / `unpause` that gates all reads.
 //! - Persistent-storage TTL extension on every successful read.
 
-use oraclehub_types::{OracleError, OracleId, OracleKind, PriceData, RateData};
+use oraclehub_types::{OracleError, OracleId, OracleKind, PriceData, RateData, SepAsset};
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short, vec, Address, BytesN, Env, IntoVal, Symbol,
     Val, Vec,
@@ -232,7 +232,10 @@ impl OracleHub {
         Ok(result)
     }
 
-    pub fn get_price(env: Env, id: OracleId, asset: Address) -> Result<PriceData, OracleError> {
+    /// Read a SEP-40 price for `asset`. The asset is the SEP-40 standard type
+    /// (`SepAsset::Stellar(addr)` for Stellar-native assets, `SepAsset::Other(symbol)`
+    /// for external-symbol-keyed feeds like the Reflector External CEX/DEX oracle).
+    pub fn get_price(env: Env, id: OracleId, asset: SepAsset) -> Result<PriceData, OracleError> {
         require_unpaused(&env)?;
         if !matches!(id.kind, OracleKind::ReflectorPrice) {
             return Err(OracleError::InvalidArgument);
