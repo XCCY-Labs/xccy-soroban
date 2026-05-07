@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "s_0m_"
+                        "symbol": "h_f3"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 1
+                        "u32": 0
                       }
                     }
                   ]
@@ -63,7 +63,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "s_0m_"
+                        "symbol": "h_f3"
                       }
                     },
                     {
@@ -71,7 +71,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 1
+                        "u32": 0
                       }
                     }
                   ]

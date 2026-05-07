@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "a_2n_2"
+                        "symbol": "v"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 0
+                        "u32": 1
                       }
                     }
                   ]
@@ -63,7 +63,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "a_2n_2"
+                        "symbol": "v"
                       }
                     },
                     {
@@ -71,7 +71,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 0
+                        "u32": 1
                       }
                     }
                   ]

@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "ujpyt"
+                        "symbol": "mipvki"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 2
+                        "u32": 3
                       }
                     }
                   ]
@@ -132,7 +132,7 @@
                           "symbol": "key"
                         },
                         "val": {
-                          "symbol": "ujpyt"
+                          "symbol": "mipvki"
                         }
                       },
                       {
@@ -140,7 +140,7 @@
                           "symbol": "kind"
                         },
                         "val": {
-                          "u32": 2
+                          "u32": 3
                         }
                       }
                     ]

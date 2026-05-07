@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "akf_9m"
+                        "symbol": "h"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 4
+                        "u32": 2
                       }
                     }
                   ]
@@ -63,7 +63,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "akf_9m"
+                        "symbol": "h"
                       }
                     },
                     {
@@ -71,7 +71,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 4
+                        "u32": 2
                       }
                     }
                   ]

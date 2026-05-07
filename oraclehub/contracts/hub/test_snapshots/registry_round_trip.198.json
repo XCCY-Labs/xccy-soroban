@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "o6"
+                        "symbol": "y_54__1b"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 4
+                        "u32": 3
                       }
                     }
                   ]
@@ -63,7 +63,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "o6"
+                        "symbol": "y_54__1b"
                       }
                     },
                     {
@@ -71,7 +71,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 4
+                        "u32": 3
                       }
                     }
                   ]

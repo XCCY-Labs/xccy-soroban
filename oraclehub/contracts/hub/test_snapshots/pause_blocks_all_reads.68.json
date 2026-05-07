@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "b"
+                        "symbol": "fxd"
                       }
                     },
                     {
@@ -132,7 +132,7 @@
                           "symbol": "key"
                         },
                         "val": {
-                          "symbol": "b"
+                          "symbol": "fxd"
                         }
                       },
                       {

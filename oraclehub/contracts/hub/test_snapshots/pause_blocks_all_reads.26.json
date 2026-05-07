@@ -23,7 +23,7 @@
                         "symbol": "key"
                       },
                       "val": {
-                        "symbol": "kjlxeu"
+                        "symbol": "id"
                       }
                     },
                     {
@@ -31,7 +31,7 @@
                         "symbol": "kind"
                       },
                       "val": {
-                        "u32": 4
+                        "u32": 1
                       }
                     }
                   ]
@@ -132,7 +132,7 @@
                           "symbol": "key"
                         },
                         "val": {
-                          "symbol": "kjlxeu"
+                          "symbol": "id"
                         }
                       },
                       {
@@ -140,7 +140,7 @@
                           "symbol": "kind"
                         },
                         "val": {
-                          "u32": 4
+                          "u32": 1
                         }
                       }
                     ]

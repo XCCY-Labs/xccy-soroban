@@ -16,7 +16,7 @@
               "function_name": "propose_upgrade",
               "args": [
                 {
-                  "bytes": "965856948e5b2e8d4aea7507b8fe842438571e341923910e8d362e41345dd818"
+                  "bytes": "fcafb78c798db70c2c92f84f9e6357afa3327fcde156cdffdfedc14c5a71df2c"
                 }
               ]
             }
@@ -119,7 +119,7 @@
                               "symbol": "wasm_hash"
                             },
                             "val": {
-                              "bytes": "965856948e5b2e8d4aea7507b8fe842438571e341923910e8d362e41345dd818"
+                              "bytes": "fcafb78c798db70c2c92f84f9e6357afa3327fcde156cdffdfedc14c5a71df2c"
                             }
                           }
                         ]

@@ -49,6 +49,18 @@
                       "key": {
                         "vec": [
                           {
+                            "symbol": "MaxObservations"
+                          }
+                        ]
+                      },
+                      "val": {
+                        "u32": 64
+                      }
+                    },
+                    {
+                      "key": {
+                        "vec": [
+                          {
                             "symbol": "Mode"
                           }
                         ]
