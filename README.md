@@ -29,7 +29,7 @@ hand-rolling primitives:
 ```
 xccy-soroban/
 ├── Cargo.toml                              # workspace
-├── rust-toolchain.toml                     # 1.91.0
+├── rust-toolchain.toml                     # 1.92.0
 ├── .cargo/config.toml                      # wasm32v1-none target hint
 └── oraclehub/
     ├── .planning/                          # RESEARCH.md, VERIFICATION.md
